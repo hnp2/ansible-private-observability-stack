@@ -1,8 +1,0 @@
----
-- name: Ensure that MinIO storage path exists
-  ansible.builtin.file:
-    path: "{{ minio_storage_dir }}"
-    state: directory
-    owner: "{{ minio_service_user }}"
-    group: "{{ minio_service_group }}"
-    mode: "0755"
