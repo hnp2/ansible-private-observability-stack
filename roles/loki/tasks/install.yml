@@ -1,0 +1,36 @@
+---
+- name: Create Loki group
+  ansible.builtin.group:
+    name: "{{ loki_service_group }}"
+    system: true
+  become: true
+
+- name: Create Loki user
+  ansible.builtin.user:
+    name: "{{ loki_service_user }}"
+    groups: "{{ [ loki_service_group ] + loki_user_groups }}"
+    system: true
+    create_home: false  # Appropriate for a system user, usually doesn't need a home directory
+  become: true
+
+- name: Download Loki package
+  ansible.builtin.copy:
+    src: "{{ loki_package_path }}"
+    dest: "/tmp/{{ loki_package }}"
+    mode: '0755'
+  become: true
+
+- name: DNF - Install Loki
+  ansible.builtin.dnf:
+    name: "/tmp/{{ loki_package }}"
+    state: present
+    disable_gpg_check: true
+  notify: Restart Loki
+  when: ansible_os_family in ['RedHat', 'Rocky']
+
+- name: APT - Install Loki
+  ansible.builtin.apt:
+    deb: "/tmp/{{ loki_package }}"
+    state: present
+  notify: Restart Loki
+  when: ansible_os_family == 'Debian'

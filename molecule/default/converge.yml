@@ -1,0 +1,29 @@
+---
+- name: Converge
+  hosts: all
+
+  pre_tasks:
+    - name: update apt cache
+      apt:
+        update_cache: yes
+      when: ansible_os_family == 'Debian'
+      changed_when: no
+  tasks:
+    - name: "Run Alertmanager"
+      include_role:
+        name: alertmanager
+#    - name: "Run Minio"
+#      include_role:
+#        name: minio
+#    - name: "Run Grafana Mimir"
+#      include_role:
+#        name: mimir
+#    - name: "Run Grafana Loki"
+#      include_role:
+#        name: loki
+#    - name: "Run Grafana"
+#      include_role:
+#        name: grafana
+#    - name: "Run Grafana Alloy collection"
+#      include_role:
+#        name: alloy

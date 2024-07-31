@@ -1,0 +1,12 @@
+---
+- name: Restart Minir
+  listen: "Restart Mimir"
+  ansible.builtin.systemd:
+    daemon_reload: true
+    name: "{{ mimir_service_name }}"
+    state: restarted
+    enabled: true
+
+- name: Check Minir is started properly
+  ansible.builtin.include_tasks: verify.yml
+  listen: "Restart Mimir"

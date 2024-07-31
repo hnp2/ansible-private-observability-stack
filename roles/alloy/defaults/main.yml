@@ -1,0 +1,75 @@
+alloy_version: "1.2.1"
+
+alloy_arch_mapping:
+  x86_64: amd64
+  aarch64: arm64
+
+alloy_os_mapping:
+  Debian: "deb"
+  RedHat: "rpm"
+
+alloy_arch: "{{ alloy_arch_mapping[ansible_architecture] | default('amd64') }}"
+alloy_package_format: "{{ alloy_os_mapping[ansible_os_family] | default('RedHat') }}"
+alloy_package: "alloy-{{ alloy_version }}_{{ alloy_arch }}.{{ alloy_package_format }}"
+alloy_package_path: "v{{ alloy_version }}/{{ alloy_package }}"
+
+alloy_service_name: "alloy"
+
+alloy_installation_dir: "/usr/local/bin"
+
+alloy_environment_file: "alloy"
+alloy_environment_dir: "/etc/default"
+
+alloy_config_dir: "/etc/alloy"
+
+alloy_config_file: "config.alloy"
+alloy_service_user: "alloy"
+
+alloy_service_group: "alloy"
+
+alloy_working_dir: "/var/lib/alloy"
+
+alloy_env_file_vars:
+  PROMETHEUS_REMOTE_WRITE_URL: "{{ prometheus_remote_write_url | default('http://localhost:9090/api/v1/write') }}"
+  ALLOY_HOSTNAME: "{{ ansible_fqdn | default(ansible_host) | default(inventory_hostname) }}:12345"
+
+alloy_flags_extra: {}
+
+alloy_start_after_service: ''
+
+alloy_config_extra:
+
+alloy_config_logging: |
+  logging {
+    level = "warn"
+  }
+
+alloy_config_default: |
+  prometheus.exporter.unix "default" {
+    disable_collectors       = ["mdadm"]
+    enable_collectors        = ["systemd"]
+  }
+  
+  prometheus.scrape "default" {
+    targets = concat(
+      prometheus.exporter.unix.default.targets,
+      [{
+        // Self-collect metrics
+        job = "alloy",
+        __address__ = env("ALLOY_HOSTNAME"),
+      }],
+    )
+  
+    forward_to = [
+      prometheus.remote_write.default.receiver,
+    ]
+  }
+  
+  prometheus.remote_write "default" {
+    endpoint {
+        url = env("PROMETHEUS_REMOTE_WRITE_URL")
+    }
+  }
+
+# Configurable user groups that the Grafana Alloy can be put in so that it can access logs.
+alloy_user_groups: []

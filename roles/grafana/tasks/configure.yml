@@ -1,0 +1,44 @@
+---
+- name: Ensure grafana directories exist
+  ansible.builtin.file:
+    path: "{{ item.path }}"
+    state: "directory"
+    owner: "{{ grafana_service_user }}"
+    group: "{{ grafana_service_group }}"
+    mode: "{{ item.mode | default('0755') }}"
+  loop:
+    - path: "/etc/grafana"
+    - path: "/etc/grafana/datasources"
+    - path: "/etc/grafana/provisioning"
+    - path: "/etc/grafana/provisioning/datasources"
+    - path: "/etc/grafana/provisioning/dashboards"
+    - path: "/etc/grafana/provisioning/notifiers"
+    - path: "/etc/grafana/provisioning/notification"
+    - path: "/etc/grafana/provisioning/plugins"
+    - path: "{{ grafana_logs_dir }}"
+    - path: "{{ grafana_data_dir }}"
+    - path: "{{ grafana_data_dir }}/dashboards"
+    - path: "{{ grafana_data_dir }}/plugins"
+
+- name: Create grafana main configuration file
+  ansible.builtin.template:
+    src: "grafana.ini.j2"
+    dest: "/etc/grafana/grafana.ini"
+    owner: "{{ grafana_service_user }}"
+    group: "{{ grafana_service_group }}"
+    mode: "0640"
+  no_log: "{{ 'false' if lookup('env', 'CI') else 'true' }}"
+  notify: Restart Grafana
+
+- name: Create grafana LDAP configuration file
+  ansible.builtin.template:
+    src: "ldap.toml.j2"
+    dest: "{{ grafana_auth.ldap.config_file | default('/etc/grafana/ldap.toml') }}"
+    owner: "{{ grafana_service_user }}"
+    group: "{{ grafana_service_group }}"
+    mode: "0640"
+  no_log: "{{ 'false' if lookup('env', 'CI') else 'true' }}"
+  notify: Restart Grafana
+  when:
+    - "'ldap' in grafana_auth"
+    - "'enabled' not in grafana_auth.ldap or grafana_auth.ldap.enabled"

@@ -1,0 +1,44 @@
+ungrouped:
+  hosts:
+#    v-dsol-mb-bfs01.dtekgroup.tek.loc:
+#    v-dsol-mb-ifs01.dtekgroup.tek.loc:
+#    v-dsol-mb-int[01:02].dtekgroup.tek.loc:
+#    v-dsol-mb-jr01.dtekgroup.tek.loc:
+#    v-dsol-mb-max[01:02].dtekgroup.tek.loc:
+#    v-dsol-mb-obs01.dtekgroup.tek.loc:
+#    v-dsol-mb-rat01.dtekgroup.tek.loc:
+#    v-dsol-mb-wfp[01:02].dtekgroup.tek.loc:
+#    v-dsol-mb-prx[01:02].dtekgroup.tek.loc:
+webservers:
+  hosts:
+#    v-dsol-mb-tst0[1:2].dtekgroup.tek.loc:
+databases:
+  hosts:
+#    v-dsol-mb-csd[01:03].dtekgroup.tek.loc:
+#    v-dsol-mb-odb[01:02].dtekgroup.tek.loc:
+#    v-dsol-mb-pdb[01:02].dtekgroup.tek.loc:
+kafka:
+  hosts:
+#    v-dsol-mb-kaf[01:02].dtekgroup.tek.loc:
+observability:
+  children:
+    alertmanager:
+    prometheus:
+    loki:
+    grafana:
+
+alertmanager:
+  hosts:
+    localhost:
+
+prometheus:
+  hosts:
+    localhost:
+
+loki:
+  hosts:
+    localhost:
+
+grafana:
+  hosts:
+    localhost:

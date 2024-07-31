@@ -1,0 +1,12 @@
+---
+- name: Install MinIO
+  include_tasks: install.yml
+  tags: [install]
+
+- name: Configure MinIO
+  include_tasks: configure.yml
+  tags: [configure]
+
+- name: Manage MinIO service
+  include_tasks: service.yml
+  tags: [service]

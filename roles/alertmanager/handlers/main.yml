@@ -1,0 +1,18 @@
+---
+- name: Restart Alertmanager
+  listen: "Restart Alertmanager"
+  become: true
+  ansible.builtin.systemd:
+    daemon_reload: true
+    name: "{{ alertmanager_service_name }}"
+    state: restarted
+    enabled: true
+  register: alertmanager_restarted
+
+- name: Reload Alertmanager
+  listen: "Reload Alertmanager"
+  become: true
+  ansible.builtin.systemd:
+    name: "{{ alertmanager_service_name }}"
+    state: reloaded
+  when: alertmanager_restarted is not defined

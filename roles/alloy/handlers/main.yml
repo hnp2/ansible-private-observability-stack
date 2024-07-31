@@ -1,0 +1,12 @@
+---
+# handlers file for Alloy
+- name: Restart Alloy
+  ansible.builtin.systemd:
+    name: "{{ alloy_service_name }}"
+    state: restarted
+  become: true
+  listen: "Restart Alloy"
+
+- name: Check alloy is started properly
+  ansible.builtin.include_tasks: verify.yml
+  listen: "Restart Alloy"

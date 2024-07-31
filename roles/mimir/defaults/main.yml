@@ -1,0 +1,51 @@
+---
+# defaults file for mimir
+mimir_version: "2.13.0"
+mimir_working_path: "/var/lib/mimir"
+mimir_ruler_alert_path: "{{ mimir_working_path }}/ruler"
+mimir_http_listen_port: 8080
+mimir_http_listen_address: "0.0.0.0"
+mimir_log_level: warn
+mimir_service_user: "mimir"
+mimir_service_group: "mimir"
+mimir_service_name: "mimir"
+
+# Configurable user groups that the Grafana Mimir can be put in so that it can access logs.
+mimir_user_groups: []
+
+mimir_arch_mapping:
+  x86_64: amd64
+  aarch64: arm64
+  armv7l: armhf
+  i386: i386
+  ppc64le: ppc64le
+
+mimir_os_mapping:
+  Debian: "deb"
+  RedHat: "rpm"
+
+mimir_arch: "{{ mimir_arch_mapping[ansible_architecture] | default('amd64') }}"
+mimir_package_format: "{{ mimir_os_mapping[ansible_os_family] | default('RedHat') }}"
+mimir_package: "mimir-{{ mimir_version }}_{{ mimir_arch }}.{{ mimir_package_format }}"
+mimir_package_path: "v{{ mimir_version }}/{{ mimir_package }}"
+
+mimir_ruler:
+  rule_path: "{{ mimir_working_path }}/ruler"
+  alertmanager_url: "http://{{ ansible_fqdn | default(ansible_host) | default(inventory_hostname) }}:{{ mimir_http_listen_port }}/alertmanager"
+  ring:
+    heartbeat_period: 5s
+    heartbeat_timeout: 10s
+
+mimir_alertmanager:
+  data_dir: "{{ mimir_working_path }}/alertmanager"
+  external_url: "http://{{ ansible_fqdn | default(ansible_host) | default(inventory_hostname) }}:{{ mimir_http_listen_port }}/alertmanager"
+
+mimir_server:
+  http_listen_port: "{{ mimir_http_listen_port }}"
+  http_listen_address: "{{ mimir_http_listen_address }}"
+  log_level: "{{ mimir_log_level }}"
+
+mimir_limits:
+  compactor_blocks_retention_period: 6m
+
+mimir_multitenancy_enabled: false

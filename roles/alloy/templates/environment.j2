@@ -1,0 +1,17 @@
+{{ ansible_managed | comment }}
+
+# Grafana Alloy Environment File
+CONFIG_FILE="{{ alloy_config_dir }}/{{ alloy_config_file }}"
+
+GOMAXPROCS={{ ansible_processor_vcpus|default(ansible_processor_count) }}
+
+# User-defined arguments to pass to the run command.
+CUSTOM_ARGS="--server.http.listen-addr=0.0.0.0:12345"
+
+# Restart on system upgrade. Defaults to true.
+RESTART_ON_UPGRADE=true
+
+# Custom Environment variables
+{% for key, value in alloy_env_file_vars.items() %}
+{{key}}={{value}}
+{% endfor %}

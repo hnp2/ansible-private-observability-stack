@@ -1,0 +1,37 @@
+---
+- name: Create Grafana group
+  ansible.builtin.group:
+    name: "{{ grafana_service_group }}"
+    system: true
+  become: true
+
+- name: Create Grafana user
+  ansible.builtin.user:
+    name: "{{ grafana_service_user }}"
+    groups: "{{ [ grafana_service_group ] + grafana_user_groups }}"
+    system: true
+    create_home: false  # Appropriate for a system user, usually doesn't need a home directory
+  become: true
+
+- name: Download Grafana package
+  ansible.builtin.copy:
+    src: "{{ grafana_package_path }}"
+    dest: "/tmp/{{ grafana_package }}"
+    mode: '0755'
+  become: true
+
+- name: DNF - Install Grafana
+  ansible.builtin.dnf:
+    name: "/tmp/{{ grafana_package }}"
+    state: present
+    disable_gpg_check: true
+  notify: Restart Grafana
+  when: ansible_os_family in ['RedHat', 'Rocky']
+
+- name: APT - Install Grafana
+  ansible.builtin.apt:
+    deb: "/tmp/{{ grafana_package }}"
+    state: present
+  notify: Restart Grafana
+  when: ansible_os_family == 'Debian'
+

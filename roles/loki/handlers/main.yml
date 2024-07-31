@@ -1,0 +1,13 @@
+---
+- name: Restart Loki
+  listen: "Restart Loki"
+  become: true
+  ansible.builtin.systemd:
+    daemon_reload: true
+    name: "{{ loki_service_name }}"
+    state: restarted
+    enabled: true
+
+- name: Check Loki is started properly
+  ansible.builtin.include_tasks: verify.yml
+  listen: "Restart Loki"

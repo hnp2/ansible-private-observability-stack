@@ -1,0 +1,43 @@
+---
+- name: Ensure that Mimir working path exists
+  ansible.builtin.file:
+    path: "{{ mimir_working_path }}"
+    state: directory
+    owner: "{{ mimir_service_user }}"
+    group: "{{ mimir_service_group }}"
+    mode: "0755"
+
+- name: Ensure that Mimir rule path exists
+  ansible.builtin.file:
+    path: "{{ mimir_ruler_alert_path }}"
+    state: directory
+    owner: "{{ mimir_service_user }}"
+    group: "{{ mimir_service_group }}"
+    mode: "0755"
+  when:
+    - mimir_ruler_alert_path is defined
+    - mimir_ruler is defined
+
+- name: Template Mimir config - /etc/mimir/config.yml
+  ansible.builtin.template:
+    src: "config.yml.j2"
+    dest: "/etc/mimir/config.yml"
+    owner: "{{ mimir_service_user }}"
+    group: "{{ mimir_service_group }}"
+    mode: "0644"
+    validate: "mimir -modules --config.file=%s"
+  notify: Restart Mimir
+
+- name: Template Loki Rule File
+  ansible.builtin.template:
+    src: "rules.yml.j2"
+    dest: "{{ mimir_ruler_alert_path }}/rules.yml"
+    owner: "{{ mimir_service_user }}"
+    group: "{{ mimir_service_group }}"
+    mode: "0644"
+  notify: Restart Mimir
+  when:
+    - mimir_ruler_alerts is defined
+    - mimir_ruler_alert_path is defined
+    - mimir_ruler is defined
+

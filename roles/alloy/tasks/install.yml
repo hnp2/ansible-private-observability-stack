@@ -1,0 +1,35 @@
+- name: Create alloy group
+  ansible.builtin.group:
+    name: "{{ alloy_service_group }}"
+    system: true
+  become: true
+
+- name: Create alloy user
+  ansible.builtin.user:
+    name: "{{ alloy_service_user }}"
+    groups: "{{ [ alloy_service_group ] + alloy_user_groups }}"
+    system: true
+    create_home: false  # Appropriate for a system user, usually doesn't need a home directory
+  become: true
+
+- name: Download alloy binary
+  ansible.builtin.copy:
+    src: "{{ alloy_package_path }}"
+    dest: "/tmp/{{ alloy_package }}"
+    mode: '0755'
+  become: true
+
+- name: APT - Install Alloy
+  when: ansible_os_family == 'Debian'
+  ansible.builtin.apt:
+    deb: "/tmp/{{ alloy_package }}"
+    state: present
+  notify: Restart Alloy
+
+- name: DNF - Install Alloy
+  when: ansible_os_family in ['RedHat', 'Rocky']
+  ansible.builtin.dnf:
+    name: "/tmp/{{ alloy_package }}"
+    state: present
+    disable_gpg_check: true
+  notify: Restart Alloy

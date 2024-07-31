@@ -1,0 +1,53 @@
+---
+- name: Create MinIO group
+  ansible.builtin.group:
+    name: "{{ minio_service_group }}"
+    system: true
+    state: present
+  become: true
+
+- name: Create MinIO user
+  ansible.builtin.user:
+    name: "{{ minio_service_user }}"
+    groups: "{{ [ minio_service_group ] + minio_user_groups }}"
+    system: true
+    state: present
+    create_home: false  # Appropriate for a system user, usually doesn't need a home directory
+  become: true
+
+- name: Download MinIO package
+  ansible.builtin.copy:
+    src: "{{ minio_package_path }}"
+    dest: "/tmp/{{ minio_package }}"
+    mode: '0755'
+  become: true
+
+- name: DNF - install MinIO
+  ansible.builtin.dnf:
+    name: "/tmp/{{ minio_package }}"
+    state: present
+    disable_gpg_check: true
+  when: ansible_os_family in ['RedHat', 'Rocky']
+
+- name: APT - Install MinIO
+  ansible.builtin.apt:
+    deb: "/tmp/{{ minio_package }}"
+    state: present
+  when: ansible_os_family == 'Debian'
+
+- name: Ensure the Minio systemd unit exists
+  ansible.builtin.template:
+    src: minio.service.j2
+    dest: /usr/lib/systemd/system/minio.service
+    owner: "{{ minio_service_user }}"
+    group: "{{ minio_service_group }}"
+    mode: '0644'
+
+- name: Ensure the Minio configuration file exists
+  ansible.builtin.template:
+    src: minio.j2
+    dest: /etc/default/minio
+    owner: "{{ minio_service_user }}"
+    group: "{{ minio_service_group }}"
+    mode: '0640'
+  notify: Restart MinIO

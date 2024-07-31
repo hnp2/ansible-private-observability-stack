@@ -1,0 +1,32 @@
+---
+- name: Talk to all hosts just so we can learn about them
+  hosts: all
+  tasks:
+    - name: Classify hosts depending on their OS distribution
+      group_by:
+        key: os_{{ ansible_facts['distribution'] }}
+
+- name: Install Prometheus Alertmanager
+  hosts: alertmanager
+  roles:
+    - alertmanager
+
+- name: Install Prometheus Prometheus
+  hosts: prometheus
+  roles:
+    - prometheus
+
+- name: Install Grafana Loki
+  hosts: loki
+  roles:
+    - loki
+
+- name: Install Grafana
+  hosts: grafana
+  roles:
+    - grafana
+
+- name: Install Grafana Alloy
+  hosts: all
+  roles:
+    - alloy

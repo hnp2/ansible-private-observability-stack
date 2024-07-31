@@ -1,0 +1,53 @@
+---
+- name: Create alertmanager system group
+  ansible.builtin.group:
+    name: "{{ alertmanager_service_group }}"
+    system: true
+    state: present
+
+- name: Create alloy user
+  ansible.builtin.user:
+    name: "{{ alertmanager_service_user }}"
+    groups: "{{ [ alertmanager_service_group ] + alertmanager_service_groups }}"
+    system: true
+    create_home: false  # Appropriate for a system user, usually doesn't need a home directory
+  become: true
+
+- name: Create alertmanager directories
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    owner: "{{ alertmanager_service_user }}"
+    group: "{{ alertmanager_service_group }}"
+    mode: 0755
+  with_items:
+    - "{{ alertmanager_config_dir }}"
+    - "{{ alertmanager_config_dir }}/templates"
+    - "{{ alertmanager_db_dir }}"
+    - "{{ _alertmanager_amtool_config_dir }}"
+
+- name: Get binary
+  block:
+    - name: Unpack alertmanager binaries
+      become: false
+      ansible.builtin.unarchive:
+        src: "v{{ alertmanager_version }}/alertmanager-{{ alertmanager_version }}.linux-{{ go_arch }}.tar.gz"
+        dest: "{{ alertmanager_archive_path }}"
+        mode: 0755
+        creates: "{{ alertmanager_archive_path }}/alertmanager-{{ alertmanager_version }}.linux-{{ go_arch }}/alertmanager"
+#      delegate_to: localhost
+      check_mode: false
+
+    - name: Propagate locally distributed alertmanager and amtool binaries
+      ansible.builtin.copy:
+        src: "{{ alertmanager_archive_path }}/alertmanager-{{ alertmanager_version }}.linux-{{ go_arch }}/{{ item }}"
+        dest: "{{ _alertmanager_binary_install_dir }}/{{ item }}"
+        mode: 0755
+        owner: "{{ alertmanager_service_user }}"
+        group: "{{ alertmanager_service_group }}"
+
+      with_items:
+        - alertmanager
+        - amtool
+      notify:
+        - Restart Alertmanager
