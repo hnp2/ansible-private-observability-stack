@@ -13,25 +13,14 @@
     create_home: false  # Appropriate for a system user, usually doesn't need a home directory
   become: true
 
-- name: Download Grafana package
-  ansible.builtin.copy:
-    src: "{{ grafana_package_path }}"
-    dest: "/tmp/{{ grafana_package }}"
-    mode: '0755'
-  become: true
-
-- name: DNF - Install Grafana
-  ansible.builtin.dnf:
-    name: "/tmp/{{ grafana_package }}"
-    state: present
-    disable_gpg_check: true
-  notify: Restart Grafana
-  when: ansible_os_family in ['RedHat', 'Rocky']
-
-- name: APT - Install Grafana
-  ansible.builtin.apt:
-    deb: "/tmp/{{ grafana_package }}"
-    state: present
-  notify: Restart Grafana
-  when: ansible_os_family == 'Debian'
+- name: Get binary
+  block:
+    - name: Unpack binary
+      become: false
+      ansible.builtin.unarchive:
+        src: "v{{ grafana_version }}/grafana-{{ grafana_version }}.linux-{{ go_arch }}.tar.gz"
+        dest: "{{ grafana_install_dir }}"
+        owner: "{{ grafana_service_user }}"
+        group: "{{ grafana_service_group }}"
+        mode: 0755
 

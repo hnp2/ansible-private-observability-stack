@@ -1,0 +1,46 @@
+- name: Create working directory
+  ansible.builtin.file:
+    path: "{{ beyla_working_dir }}"
+    state: directory
+    owner: "{{ beyla_service_user }}"
+    group: "{{ beyla_service_group }}"
+    mode: "0755"
+  become: true
+
+- name: Create beyla config directory
+  ansible.builtin.file:
+    path: "{{ beyla_config_dir }}"
+    state: directory
+    owner: "{{ beyla_service_user }}"
+    group: "{{ beyla_service_group }}"
+    mode: '0755'
+  become: true
+
+- name: Create systemd service unit
+  ansible.builtin.template:
+    src: "{{ beyla_service_name }}.service.j2"
+    dest: /etc/systemd/system/{{ beyla_service_name }}.service
+    owner: root
+    group: root
+    mode: 0644
+  become: true
+
+- name: Deploy beyla configuration file
+  ansible.builtin.template:
+    src: "{{ beyla_config_file }}.j2"
+    dest: "{{ beyla_config_dir }}/{{ beyla_config_file }}"
+    owner: "{{ beyla_service_user }}"
+    group: "{{ beyla_service_group }}"
+    mode: '0644'
+  notify: Restart beyla
+  become: true
+
+- name: Deploy beyla env file
+  ansible.builtin.template:
+    src: "{{ beyla_environment_file }}.j2"
+    dest: "{{ beyla_config_dir }}/{{ beyla_environment_file }}"
+    owner: "{{ beyla_service_user }}"
+    group: "{{ beyla_service_group }}"
+    mode: '0644'
+  notify: Restart Beyla
+  become: true

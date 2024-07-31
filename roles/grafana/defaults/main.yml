@@ -1,22 +1,15 @@
 ---
-grafana_version: "11.1.2"
-grafana_service_name: "grafana-server"
+grafana_version: "11.1.3"
+grafana_service_name: "grafana"
 grafana_service_user: "grafana"
 grafana_service_group: "grafana"
 grafana_user_groups: []
-grafana_arch_mapping:
-  x86_64: amd64
-  aarch64: arm64
 
-grafana_os_mapping:
-  Debian: "deb"
-  RedHat: "rpm"
+grafana_install_dir: "/opt"
+grafana_home_dir: "{{ grafana_install_dir }}/grafana-v{{ grafana_version }}"
 
-grafana_arch: "{{ grafana_arch_mapping[ansible_architecture] | default('amd64') }}"
-grafana_package_format: "{{ grafana_os_mapping[ansible_os_family] | default('RedHat') }}"
-grafana_package: "grafana-{{ grafana_version }}_{{ grafana_arch }}.{{ grafana_package_format }}"
-grafana_package_path: "v{{ grafana_version }}/{{ grafana_package }}"
-
+grafana_config_dir: "/etc/grafana"
+grafana_config_file: "grafana.ini"
 # Should we use the provisioning capability when possible (provisioning require grafana >= 5.0)
 grafana_use_provisioning: true
 
@@ -27,6 +20,7 @@ grafana_instance: "{{ ansible_fqdn | default(ansible_host) | default(inventory_h
 
 grafana_logs_dir: "/var/log/grafana"
 grafana_data_dir: "/var/lib/grafana"
+grafana_pid_file_dir: "/var/run/grafana"
 
 grafana_address: "0.0.0.0"
 grafana_port: 3000

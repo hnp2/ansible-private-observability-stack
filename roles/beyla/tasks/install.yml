@@ -1,0 +1,39 @@
+- name: Create group
+  ansible.builtin.group:
+    name: "{{ beyla_service_group }}"
+    system: true
+  become: true
+
+- name: Create user
+  ansible.builtin.user:
+    name: "{{ beyla_service_user }}"
+    groups: "{{ [ beyla_service_group ] + beyla_user_groups }}"
+    system: true
+    create_home: false  # Appropriate for a system user, usually doesn't need a home directory
+  become: true
+
+- name: Get binary
+  block:
+    - name: Ensure working path exists
+      ansible.builtin.file:
+        path: "{{ beyla_archive_path }}"
+        state: directory
+        owner: "{{ beyla_service_user }}"
+        group: "{{ beyla_service_group }}"
+        mode: "0755"
+
+    - name: Unpack binary
+      become: false
+      ansible.builtin.unarchive:
+        src: "v{{ beyla_version }}/beyla-linux-{{ go_arch }}-v{{ beyla_version }}.tar.gz"
+        dest: "{{ beyla_archive_path }}"
+        mode: 0755
+      check_mode: false
+
+    - name: Propagate locally distributed binaries
+      ansible.builtin.copy:
+        src: "{{ beyla_archive_path }}/beyla"
+        dest: "{{ beyla_binary_dir }}/beyla"
+        mode: 0755
+        owner: "{{ beyla_service_user }}"
+        group: "{{ beyla_service_group }}"

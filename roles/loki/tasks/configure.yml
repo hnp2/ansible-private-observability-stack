@@ -1,5 +1,5 @@
 ---
-- name: Ensure that Loki working path exists
+- name: Ensure working path exists
   ansible.builtin.file:
     path: "{{ loki_working_path }}"
     state: directory
@@ -7,14 +7,32 @@
     group: "{{ loki_service_group }}"
     mode: "0755"
 
-- name: Template Loki config - /etc/loki/config.yml
+- name: Ensure config path exists
+  ansible.builtin.file:
+    path: "{{ loki_config_path }}"
+    state: directory
+    owner: "{{ loki_service_user }}"
+    group: "{{ loki_service_group }}"
+    mode: "0755"
+
+- name: Create systemd service unit
+  ansible.builtin.template:
+    src: loki.service.j2
+    dest: /etc/systemd/system/loki.service
+    owner: root
+    group: root
+    mode: 0644
+  notify:
+    - Restart Loki
+
+- name: Template Loki config
   ansible.builtin.template:
     src: "config.yml.j2"
-    dest: "/etc/loki/config.yml"
+    dest: "{{ loki_config_path }}/config.yml"
     owner: "{{ loki_service_user }}"
     group: "{{ loki_service_group }}"
     mode: "0644"
-    validate: "/usr/bin/loki --verify-config -config.file %s"
+    validate: "{{ loki_binnary_path }}/loki --verify-config -config.file %s"
   notify: Restart Loki
 
 - name: Ensure that Loki rule path exists

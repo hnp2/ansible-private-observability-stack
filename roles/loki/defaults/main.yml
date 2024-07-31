@@ -4,32 +4,17 @@ loki_version: "3.1.0"
 loki_http_listen_port: 3100
 loki_http_listen_address: "0.0.0.0"
 loki_expose_port: false
-loki_download_url_rpm: "loki-{{ loki_version }}.{{ __loki_arch }}.rpm"
-loki_download_url_deb: "loki-{{ loki_version }.{{ __loki_arch }}.deb"
 loki_working_path: "/var/lib/loki"
 loki_ruler_alert_path: "{{ loki_working_path }}/rules/fake"
+loki_config_path: "/etc/loki"
+loki_binnary_path: "/usr/local/bin"
+loki_archive_path: "/tmp/loki"
 loki_service_user: "loki"
 loki_service_group: "loki"
 loki_service_name: "loki"
 
 # Configurable user groups that the Grafana Loki can be put in so that it can access logs.
 loki_user_groups: []
-
-loki_arch_mapping:
-  x86_64: amd64
-  aarch64: arm64
-  armv7l: armhf
-  i386: i386
-  ppc64le: ppc64le
-
-loki_os_mapping:
-  Debian: "deb"
-  RedHat: "rpm"
-
-loki_arch: "{{ loki_arch_mapping[ansible_architecture] | default('amd64') }}"
-loki_package_format: "{{ loki_os_mapping[ansible_os_family] | default('RedHat') }}"
-loki_package: "loki-{{ loki_version }}_{{ loki_arch }}.{{ loki_package_format }}"
-loki_package_path: "v{{ loki_version }}/{{ loki_package }}"
 
 # Default Variables for /etc/loki/config.yml
 loki_auth_enabled: false

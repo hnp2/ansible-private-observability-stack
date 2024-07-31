@@ -1,2 +1,9 @@
 ---
 # handlers file for beyla
+- name: Restart Beyla
+  ansible.builtin.systemd:
+    name: "{{ beyla_service_name }}"
+    state: restarted
+  become: true
+  listen: "Restart Beyla"
+

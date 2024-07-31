@@ -13,24 +13,29 @@
     create_home: false  # Appropriate for a system user, usually doesn't need a home directory
   become: true
 
-- name: Download Loki package
-  ansible.builtin.copy:
-    src: "{{ loki_package_path }}"
-    dest: "/tmp/{{ loki_package }}"
-    mode: '0755'
-  become: true
+- name: Get binary
+  block:
+    - name: Ensure that Loki working path exists
+      ansible.builtin.file:
+        path: "{{ loki_archive_path }}"
+        state: directory
+        owner: "{{ loki_service_user }}"
+        group: "{{ loki_service_group }}"
+        mode: "0755"
 
-- name: DNF - Install Loki
-  ansible.builtin.dnf:
-    name: "/tmp/{{ loki_package }}"
-    state: present
-    disable_gpg_check: true
-  notify: Restart Loki
-  when: ansible_os_family in ['RedHat', 'Rocky']
+    - name: Unpack Loki binary
+      become: false
+      ansible.builtin.unarchive:
+        src: "v{{ loki_version }}/loki-linux-{{ go_arch }}.zip"
+        dest: "{{ loki_archive_path }}"
+        mode: 0755
+      check_mode: false
 
-- name: APT - Install Loki
-  ansible.builtin.apt:
-    deb: "/tmp/{{ loki_package }}"
-    state: present
-  notify: Restart Loki
-  when: ansible_os_family == 'Debian'
+    - name: Propagate locally distributed alertmanager and amtool binaries
+      ansible.builtin.copy:
+        src: "{{ loki_archive_path }}/loki-linux-{{ go_arch }}"
+        dest: "{{ loki_binnary_path }}/loki"
+        mode: 0755
+        owner: "{{ loki_service_user }}"
+        group: "{{ loki_service_group }}"
+

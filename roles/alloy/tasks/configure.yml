@@ -16,6 +16,15 @@
     mode: '0755'
   become: true
 
+- name: Create systemd service unit
+  ansible.builtin.template:
+    src: "{{ alloy_service_name }}.service.j2"
+    dest: /etc/systemd/system/{{ alloy_service_name }}.service
+    owner: root
+    group: root
+    mode: 0644
+  become: true
+
 - name: Deploy alloy configuration file
   ansible.builtin.template:
     src: config.alloy.j2
@@ -26,10 +35,10 @@
   notify: Restart Alloy
   become: true
 
-- name: Deploy alloy environment file
+- name: Deploy alloy env file
   ansible.builtin.template:
-    src: environment.j2
-    dest: "{{ alloy_environment_dir }}/{{ alloy_environment_file }}"
+    src: "{{ alloy_environment_file }}.j2"
+    dest: "{{ alloy_config_dir }}/{{ alloy_environment_file }}"
     owner: "{{ alloy_service_user }}"
     group: "{{ alloy_service_group }}"
     mode: '0644'

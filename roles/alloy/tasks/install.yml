@@ -12,24 +12,28 @@
     create_home: false  # Appropriate for a system user, usually doesn't need a home directory
   become: true
 
-- name: Download alloy binary
-  ansible.builtin.copy:
-    src: "{{ alloy_package_path }}"
-    dest: "/tmp/{{ alloy_package }}"
-    mode: '0755'
-  become: true
+- name: Get binary
+  block:
+    - name: Ensure working path exists
+      ansible.builtin.file:
+        path: "{{ alloy_archive_path }}"
+        state: directory
+        owner: "{{ alloy_service_user }}"
+        group: "{{ alloy_service_group }}"
+        mode: "0755"
 
-- name: APT - Install Alloy
-  when: ansible_os_family == 'Debian'
-  ansible.builtin.apt:
-    deb: "/tmp/{{ alloy_package }}"
-    state: present
-  notify: Restart Alloy
+    - name: Unpack binary
+      become: false
+      ansible.builtin.unarchive:
+        src: "v{{ alloy_version }}/alloy-linux-{{ go_arch }}.zip"
+        dest: "{{ alloy_archive_path }}"
+        mode: 0755
+      check_mode: false
 
-- name: DNF - Install Alloy
-  when: ansible_os_family in ['RedHat', 'Rocky']
-  ansible.builtin.dnf:
-    name: "/tmp/{{ alloy_package }}"
-    state: present
-    disable_gpg_check: true
-  notify: Restart Alloy
+    - name: Propagate locally distributed binaries
+      ansible.builtin.copy:
+        src: "{{ alloy_archive_path }}/alloy-linux-{{ go_arch }}"
+        dest: "{{ alloy_binary_dir }}/alloy"
+        mode: 0755
+        owner: "{{ alloy_service_user }}"
+        group: "{{ alloy_service_group }}"

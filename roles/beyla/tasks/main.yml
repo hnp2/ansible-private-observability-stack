@@ -1,2 +1,13 @@
 ---
 # tasks file for beyla
+- name: Install beyla
+  include_tasks: install.yml
+  tags: [install]
+
+- name: Configure beyla
+  include_tasks: configure.yml
+  tags: [configure]
+
+- name: Manage beyla service
+  include_tasks: service.yml
+  tags: [service]

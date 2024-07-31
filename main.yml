@@ -30,3 +30,8 @@
   hosts: all
   roles:
     - alloy
+
+# - name: Install Grafana Beyla
+#   hosts: all
+#   roles:
+#     - beyla

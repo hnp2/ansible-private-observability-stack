@@ -1,0 +1,20 @@
+[Unit]
+Description= Vendor-agnostic OpenTelemetry Collector distribution with programmable pipelines
+Documentation=https://grafana.com/docs/alloy
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Restart=always
+User={{ alloy_service_user }}
+Group={{ alloy_service_group }}
+Environment=HOSTNAME=%H
+EnvironmentFile={{ alloy_config_dir }}/{{ alloy_environment_file }}
+WorkingDirectory={{ alloy_working_dir }}
+ExecStart={{ alloy_binary_dir }}/alloy run $CUSTOM_ARGS --storage.path={{ alloy_storage_dir }} $CONFIG_FILE
+ExecReload=/usr/bin/env kill -HUP $MAINPID
+TimeoutStopSec=20s
+SendSIGKILL=no
+
+[Install]
+WantedBy=multi-user.target

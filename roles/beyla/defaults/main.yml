@@ -1,2 +1,27 @@
 ---
 # defaults file for beyla
+beyla_version: "1.7.0"
+
+beyla_binary_dir: "/usr/local/bin"
+beyla_archive_path: "/tmp/beyla"
+beyla_config_dir: "/etc/beyla"
+beyla_config_file: "config.yml"
+beyla_environment_file: "beyla.env"
+
+beyla_config:
+  open_port: 80,443
+  service_name: httpd
+  log_level: INFO
+
+  ebpf:
+    wakeup_len: 100
+  prometheus_export:
+    port: 8999
+    path: /metrics
+
+
+beyla_service_name: "beyla"
+beyla_service_user: "beyla"
+beyla_service_group: "beyla"
+# Configurable user groups that the Grafana Alloy can be put in so that it can access logs.
+beyla_user_groups: ["root"]

@@ -1,0 +1,17 @@
+[Unit]
+Description=Run the Beyla application for a given application
+After=network.target
+
+[Service]
+Type = simple
+Restart = always
+User = {{ beyla_service_user }}
+Group = {{ beyla_service_beyla }}
+WorkingDirectory = {{ beyla_config_dir }}
+EnvironmentFile = {{ beyla_config_dir }}/beyla.env
+ExecStart=
+ExecStart={{ beyla_binary_dir }}/beyla \
+	--config={{ beyla_config_dir }}/{{ beyla_config_file }}
+
+[Install]
+WantedBy = multi-user.target

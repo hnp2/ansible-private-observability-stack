@@ -1,33 +1,21 @@
 alloy_version: "1.2.1"
 
-alloy_arch_mapping:
-  x86_64: amd64
-  aarch64: arm64
-
-alloy_os_mapping:
-  Debian: "deb"
-  RedHat: "rpm"
-
-alloy_arch: "{{ alloy_arch_mapping[ansible_architecture] | default('amd64') }}"
-alloy_package_format: "{{ alloy_os_mapping[ansible_os_family] | default('RedHat') }}"
-alloy_package: "alloy-{{ alloy_version }}_{{ alloy_arch }}.{{ alloy_package_format }}"
-alloy_package_path: "v{{ alloy_version }}/{{ alloy_package }}"
+alloy_binary_dir: "/usr/local/bin"
+alloy_archive_path: "/tmp/alloy"
+alloy_config_dir: "/etc/alloy"
+alloy_config_file: "config.alloy"
+alloy_environment_file: "alloy.env"
 
 alloy_service_name: "alloy"
-
-alloy_installation_dir: "/usr/local/bin"
-
-alloy_environment_file: "alloy"
-alloy_environment_dir: "/etc/default"
-
-alloy_config_dir: "/etc/alloy"
-
-alloy_config_file: "config.alloy"
 alloy_service_user: "alloy"
-
 alloy_service_group: "alloy"
+# Configurable user groups that the Grafana Alloy can be put in so that it can access logs.
+alloy_user_groups: ["root"]
 
 alloy_working_dir: "/var/lib/alloy"
+alloy_storage_dir: "{{ alloy_working_dir }}/data"
+
+alloy_custom_args: "--server.http.listen-addr=0.0.0.0:12345 --stability.level=public-preview"
 
 alloy_env_file_vars:
   PROMETHEUS_REMOTE_WRITE_URL: "{{ prometheus_remote_write_url | default('http://localhost:9090/api/v1/write') }}"
@@ -71,5 +59,4 @@ alloy_config_default: |
     }
   }
 
-# Configurable user groups that the Grafana Alloy can be put in so that it can access logs.
-alloy_user_groups: []
+
