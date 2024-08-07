@@ -1,0 +1,51 @@
+groups:
+    - name: apache-http
+      rules:
+        - alert: ApacheDown
+          annotations:
+            description: Apache is down on {{ $labels.instance }}.
+            summary: Apache is down.
+          expr: apache_up == 0
+          for: 5m
+          labels:
+            severity: warning
+        - alert: ApacheRestart
+          annotations:
+            description: Apache has just been restarted on {{ $labels.instance }}.
+            summary: Apache restart.
+          expr: apache_uptime_seconds_total / 60 < 1
+          for: "0"
+          labels:
+            severity: info
+        - alert: ApacheWorkersLoad
+          annotations:
+            description: |
+                Apache workers in busy state approach the max workers count 80% workers busy on {{ $labels.instance }}.
+                The current value is {{ $value }}%.
+            summary: Apache workers load is too high.
+          expr: |
+            (sum by (instance) (apache_workers{state="busy"}) / sum by (instance) (apache_scoreboard) ) * 100 > 80
+          for: 15m
+          labels:
+            severity: warning
+        - alert: ApacheResponseTimeTooHigh
+          annotations:
+            description: |
+                Apache average response time is above the threshold of 5000 ms on {{ $labels.instance }}.
+                The current value is {{ $value }} ms.
+            summary: Apache response time is too high.
+          expr: |
+            increase(apache_duration_ms_total[5m])/increase(apache_accesses_total[5m]) > 5000
+          for: 15m
+          labels:
+            severity: warning
+        - alert: ApacheErrorsRateTooHigh
+          annotations:
+            description: |
+                Apache errors rate (4xx and 5xx HTTP codes) is above the threshold of 20% on {{ $labels.instance }}.
+                The current value is {{ $value }}%.
+            summary: Apache errors rate is too high.
+          expr: "avg by (job, instance)\n(\n(\n  increase(apache_response_http_codes_bucket{le=~\"499\"}[5m])\n- ignoring(le)\n  increase(apache_response_http_codes_bucket{le=~\"399\"}[5m])\n)\n/\nincrease(apache_response_http_codes_count[5m]) * 100\n)\n> 20\nunless \n# at least 100 calls\nincrease(apache_accesses_total[5m]) > 100\n"
+          for: 5m
+          labels:
+            severity: critical
